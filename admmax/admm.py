@@ -9,14 +9,12 @@ from jax.scipy.linalg import cho_factor, cho_solve
 def admm_qp(
     Q, q, G, tol=1e-4, max_iters=50000
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, int]:
-    """Full ADMM solver for QP with derivative sign constraints.
+    """Full ADMM solver for QP.
 
     Args:
         Q: Quadratic term (N,N)
         q: Linear term (N,)
         G: Constraint matrix (K,n,N)
-        p_init: Initial polynomial coefficients (N,)
-        rho: ADMM penalty parameter
         tol: convergence tolerance
         max_iters: maximum iterations
 
@@ -47,7 +45,7 @@ def admm_qp(
         G @ p_init, ord=2
     )  # scale of constraint violation
     s_norm = jnp.maximum(s_norm, 1.0)  # avoid division by tiny numbers
-    rho = Q_norm / s_norm
+    rho = 0.1*Q_norm / s_norm
 
     state = (p0, s0, u0, rho, n_iter0, converged0)
 
@@ -78,7 +76,7 @@ def admm_qp(
         primal_resid = jnp.linalg.norm(G2d @ pnew + snew)
         dual_resid = jnp.linalg.norm(-rho * G2d.T @ (snew - s))
 
-        k = 50
+        k = 5
         update_rho = jnp.logical_and(n_iter % k == 0, n_iter > 0)
 
         rhonew = jax.lax.cond(
