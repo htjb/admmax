@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "admmax"
+version = "0.1.0"
+description = "admmax stuff."
+authors = [{name ="Harry Bevins", email ="htjb2@cam.ac.uk"}]
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ['E', 'F', 'W', 'I', 'D', 'UP', 'ANN']
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
