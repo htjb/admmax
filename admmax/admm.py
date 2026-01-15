@@ -1,3 +1,5 @@
+"""ADMM solver for QP with derivative sign constraints."""
+
 import jax
 import jax.numpy as jnp
 from jax.scipy.linalg import cho_factor, cho_solve
@@ -5,7 +7,7 @@ from jax.scipy.linalg import cho_factor, cho_solve
 
 @jax.jit
 def admm_qp(
-    signs, Q, q, G, tol=1e-4, max_iters=50000
+    Q, q, G, tol=1e-4, max_iters=50000
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, int]:
     """Full ADMM solver for QP with derivative sign constraints.
 
@@ -24,7 +26,6 @@ def admm_qp(
         u: final dual
         n_iter: number of iterations run
     """
-    G = signs[:, None, None] * G
     K, n, N = G.shape
     g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
     g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)
@@ -78,7 +79,7 @@ def admm_qp(
         dual_resid = jnp.linalg.norm(-rho * G2d.T @ (snew - s))
 
         k = 50
-        update_rho = jnp.logical_and(n_iter % k == 0, n_iter > 0) 
+        update_rho = jnp.logical_and(n_iter % k == 0, n_iter > 0)
 
         rhonew = jax.lax.cond(
             update_rho,
@@ -96,7 +97,7 @@ def admm_qp(
             lambda rho: rho,
             operand=rho,
         )
- 
+
         delta_p = jnp.linalg.norm(pnew - p)
         converged = jnp.logical_and(primal_resid < tol, delta_p < tol)
 
